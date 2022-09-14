@@ -59,7 +59,7 @@ class HGModel:
 
         # let there be n agents with random initial assesments
         agents = []
-        for i in range(self.nagents): # TODO: ist hier self.nagents ein tupel? Warum?
+        for i in range(self.nagents):
             agent = Agent(i)
             agents.append(agent)
             data.append([agent.id, 0, agent.assesment])
@@ -69,7 +69,8 @@ class HGModel:
             agents[i].update_peers(agents, self.epsilon)
 
         # for each time step
-        for u in range(1, self.max_time): # we did step 0 by setting everything up
+        for u in range(1, self.max_time + 1): # we did step 0 by setting everything up 
+                # and we want to include the step of max_time
 
             # update the assesment of each agent to a ratio between the agents assesments and the mean of their peers
             for agent in agents:
@@ -95,13 +96,8 @@ class HGModel:
         
         return dataframe
 
-# TODO: progress bar
-
-# TODO: resizing window
-
-# TODO: time in first empty plot
-
-# TODO: exporting as image and csv
+# TODO maybe: progress bar; export as csv
+# TODO: allow irrational assesments?
 
 class GUIApplication:
     # --- static functions --- #
@@ -132,7 +128,7 @@ class GUIApplication:
         data = self.model.run_simulation()
 
         # build numpy arrays from the pandas DataFrame
-        time_x = np.linspace(0, max_time-1, max_time)
+        time_x = np.linspace(0, max_time, max_time+1)
         agent_y_values = []
 
         for i in range(nagents):
