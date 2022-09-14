@@ -76,3 +76,9 @@ Chaos:
 Wenn sie sich besonders gut zuhören, polarisieren sie manchmal
 
 alpha sollte eher hoch sein, sonst nur chaos
+
+# Was für ein Modell?
+
+Will ich ein Modell programmieren, das man dann runterladen und mit dem man herumspielen kann? Oder will ich es nur implementieren, spannende Graphen ausspucken und darüber schreiben?
+
+Wahrscheinlich ersteres, schließlich ist der Deal, dass wir alleine für das Modell bewertet werden.
