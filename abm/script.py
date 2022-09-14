@@ -13,6 +13,7 @@ import pandas as pd
 import seaborn as sns
 import random as rnd
 import statistics as stat
+import matplotlib.pyplot as plt
 
 # --- classes --- #
 
@@ -94,11 +95,16 @@ class HGModel:
         return dataframe
 
 
+# TODO: this is probably prettier in another class
 # --- global variables --- #
 
+model = HGModel()
+
+# --- functions --- #
+
 def generate_data(nagents, max_time, alpha, epsilon, tau, noise):
-    print(f"{(nagents, max_time, alpha, epsilon, tau, noise)}")
-    return pd.DataFrame(data=[[0, 1], [1, 2], [2, 5]], columns=["time", "value"])
+    print(f"simulating...")
+    return model.run_simulation()
 
 def set_up_ui(root):
     # root window
@@ -150,29 +156,23 @@ def set_up_ui(root):
     noise = StringVar()
     noise.set("0.1")
     noise_entry = ttk.Entry(input_frame, width=20, textvariable=noise)
-    noise_entry.grid(column=1, row=5, sticky=(W, E))
-
-
-    # canvas
-    figure = Figure(figsize=(6, 6))
-    ax = figure.subplots()
-
-    canvas = FigureCanvasTkAgg(figure, master=main_frame)  # A tk.DrawingArea.
-    canvas.draw()
-
-    toolbar = NavigationToolbar2Tk(canvas, main_frame, pack_toolbar=False)
-    toolbar.update()
-    toolbar.grid(row=1, column=0)
-
-    canvas.mpl_connect(
-        "key_press_event", lambda event: print(f"you pressed {event.key}"))
-    canvas.mpl_connect("key_press_event", key_press_handler)
-
-    canvas.get_tk_widget().grid(row=0, column=0, padx=4)
+    noise_entry.grid(column=1, row=5, sticky=(W, E))    
 
     def simulate():
-        data = generate_data(
-            int(nagents.get()), 
+        figure = Figure(figsize=(6, 6))
+        ax = figure.subplots()
+
+        canvas = FigureCanvasTkAgg(figure, master=main_frame)  # A tk.DrawingArea.
+        canvas.draw()
+
+        toolbar = NavigationToolbar2Tk(canvas, main_frame, pack_toolbar=False)
+        toolbar.update()
+        toolbar.grid(row=1, column=0)
+
+        canvas.get_tk_widget().grid(row=0, column=0, padx=4)
+
+        data = generate_data( # TODO: die werte werden hier einmal gespeichert. sollen eigentlich jedes mal neu ausgelesen werden
+            int(nagents.get()), # TODO: das programm hängt sich beim Beenden auf
             int(max_time.get()), 
             float(alpha.get()), 
             float(epsilon.get()), 
@@ -180,10 +180,13 @@ def set_up_ui(root):
             float(noise.get())
         )
         
+        ax.clear()
+
+        plt.clf()
         sns.set_theme()
         sns.lineplot(
             data=data,
-            x="time", y="value", ax=ax)
+            x="time", y="assesment", hue="agent", ax=ax)
 
         canvas.draw()
 
