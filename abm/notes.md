@@ -21,3 +21,58 @@ Ich programmiere es jetzt erstmal brute force und wenn ich Geschwindigkeitsprobl
 Vielleicht hängt es damit zusammen, dass ich tau Werte nahe 1 oder 0 genommen habe und die Normalverteilung ab 1 oder 0 abschneide.
 
 Irgendwie sind die Daten hier einfach nur Chaos. Weiß nicht, ob das an einem Programmierfehler meinerseits liegt, oder ob das Hegselmann-Krause Modell einfach so ist. __Nächste Schritte:__ Hegeselmann Krause Paper checken; schauen, ob ich deren Daten reproduzieren kann.
+
+# Ideen
+
+Ich baue manche malicious actors ein
+
+Ich teste unterschiedliche Formen von Zensur: 
+
+- social silencing: niemand darf kommunizieren, wenn in bestimmter Range, die weit entfernt von der Mehr heit ist
+- state censorship: niemand darf in einer bestimmten Range kommunizieren
+
+Auch beachten: Bei Hegselmann-Krause variiert alpha je nach Akteurgruppe. Sie differenzieren zwischen truth seekers und non-truth-seekers.
+
+" Another view could be to look at as a parameter that can be influenced by intervention. Under such a view, one might start thinking about efficient truth proliferation policies: Which agents, holding what views, should have their attractions to truth modulated in order that all or at least a significant part of a society believes the truth? What if there is time pressure? What to do if the social exchange process has a network structure with primarily local interactions? (Hegselmann-Krause, 242)
+
+# Beobachtungen
+
+Werte in diesem Bereich geben recht schöne Ergebnisse:
+
+Konvergenz:
+
+    n = 30
+    epsilon = .2
+    alpha = .97
+    noise = .1
+    tau = .4
+    max_time = 20
+
+    n = 40
+    epsilon = .2
+    alpha = .95
+    noise = .2
+    tau = .4
+    max_time = 20
+
+Polarisierung:
+
+    n = 40
+    epsilon = .1
+    alpha = .98
+    noise = .2
+    tau = .4
+    max_time = 20
+
+Chaos:
+
+    n = 40
+    epsilon = .1
+    alpha = .4
+    noise = .2
+    tau = .4
+    max_time = 20
+
+Wenn sie sich besonders gut zuhören, polarisieren sie manchmal
+
+alpha sollte eher hoch sein, sonst nur chaos
