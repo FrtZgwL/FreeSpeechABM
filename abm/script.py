@@ -14,6 +14,7 @@ import seaborn as sns
 import random as rnd
 import statistics as stat
 import matplotlib.pyplot as plt
+import random
 
 # --- classes --- #
 
@@ -68,7 +69,7 @@ class HGModel:
             agents[i].update_peers(agents, self.epsilon)
 
         # for each time step
-        for u in range(1, self.max_time): # we did the fist step by setting everything up
+        for u in range(1, self.max_time): # we did step 0 by setting everything up
 
             # update the assesment of each agent to a ratio between the agents assesments and the mean of their peers
             for agent in agents:
@@ -94,108 +95,183 @@ class HGModel:
         
         return dataframe
 
+# TODO: progress bar
 
-# TODO: this is probably prettier in another class
-# --- global variables --- #
+# TODO: resizing window
 
-model = HGModel()
+# TODO: time in first empty plot
 
-# --- functions --- #
+# TODO: exporting as image and csv
 
-def generate_data(nagents, max_time, alpha, epsilon, tau, noise):
-    print(f"simulating...")
-    return model.run_simulation()
+class GUIApplication:
+    # --- static functions --- #
+    def clear_axes(self, axes):
+        axes.clear()
+        axes.set_ylim(0, 1)
+        axes.set_xlim(0, int(self.max_time.get()))
+        axes.grid(True, color="1")
+        axes.set_facecolor("0.95")
+        axes.set_ylabel("assesment")
+        axes.set_xlabel("time")
 
-def set_up_ui(root):
-    # root window
-    root.title("ABM")
+    # --- class methods --- #
 
-    # frames
-    main_frame = ttk.Frame(root, padding=10)
-    main_frame.grid()
+    def simulate(self): 
+        # update values and run simulation
+        nagents = int(self.nagents.get())
+        self.model.nagents = int(self.nagents.get())
 
-    input_frame = ttk.Frame(main_frame)
-    input_frame['borderwidth'] = 2
-    input_frame['relief'] = 'raised'
-    input_frame.grid(column=1, row=0, sticky=N, padx=4)
+        max_time = int(self.max_time.get())
+        self.model.max_time = int(self.max_time.get())
 
-    # labels
-    ttk.Label(input_frame, text="n agents").grid(column=0, row=0, sticky=W)
-    ttk.Label(input_frame, text="max time").grid(column=0, row=1, sticky=W)
-    ttk.Label(input_frame, text="alpha").grid(column=0, row=2, sticky=W)
-    ttk.Label(input_frame, text="epsilon").grid(column=0, row=3, sticky=W)
-    ttk.Label(input_frame, text="tau").grid(column=0, row=4, sticky=W)
-    ttk.Label(input_frame, text="noise").grid(column=0, row=5, sticky=W)
+        self.model.alpha = float(self.alpha.get())
+        self.model.epsilon = float(self.epsilon.get())
+        self.model.tau = float(self.tau.get())
+        self.model.noise = float(self.noise.get())
 
-    # input fields
-    nagents = StringVar()
-    nagents.set("40")
-    nagents_entry = ttk.Entry(input_frame, width=20, textvariable=nagents)
-    nagents_entry.grid(column=1, row=0, sticky=(W, E))
+        data = self.model.run_simulation()
 
-    max_time = StringVar()
-    max_time.set("20")
-    max_time_entry = ttk.Entry(input_frame, width=20, textvariable=max_time)
-    max_time_entry.grid(column=1, row=1, sticky=(W, E))
+        # build numpy arrays from the pandas DataFrame
+        time_x = np.linspace(0, max_time-1, max_time)
+        agent_y_values = []
 
-    alpha = StringVar()
-    alpha.set("0.75")
-    alpha_entry = ttk.Entry(input_frame, width=20, textvariable=alpha)
-    alpha_entry.grid(column=1, row=2, sticky=(W, E))
-
-    epsilon = StringVar()
-    epsilon.set("0.1")
-    epsilon_entry = ttk.Entry(input_frame, width=20, textvariable=epsilon)
-    epsilon_entry.grid(column=1, row=3, sticky=(W, E))
-
-    tau = StringVar()
-    tau.set("0.4")
-    tau_entry = ttk.Entry(input_frame, width=20, textvariable=tau)
-    tau_entry.grid(column=1, row=4, sticky=(W, E))
-
-    noise = StringVar()
-    noise.set("0.1")
-    noise_entry = ttk.Entry(input_frame, width=20, textvariable=noise)
-    noise_entry.grid(column=1, row=5, sticky=(W, E))    
-
-    def simulate():
-        figure = Figure(figsize=(6, 6))
-        ax = figure.subplots()
-
-        canvas = FigureCanvasTkAgg(figure, master=main_frame)  # A tk.DrawingArea.
-        canvas.draw()
-
-        toolbar = NavigationToolbar2Tk(canvas, main_frame, pack_toolbar=False)
-        toolbar.update()
-        toolbar.grid(row=1, column=0)
-
-        canvas.get_tk_widget().grid(row=0, column=0, padx=4)
-
-        data = generate_data( # TODO: die werte werden hier einmal gespeichert. sollen eigentlich jedes mal neu ausgelesen werden
-            int(nagents.get()), # TODO: das programm hängt sich beim Beenden auf
-            int(max_time.get()), 
-            float(alpha.get()), 
-            float(epsilon.get()), 
-            float(tau.get()), 
-            float(noise.get())
-        )
+        for i in range(nagents):
+            next_values = data[data["agent"] == i]["assesment"].values
+            agent_y_values.append(next_values)
         
-        ax.clear()
+        self.clear_axes(self.axes)
 
-        plt.clf()
-        sns.set_theme()
-        sns.lineplot(
-            data=data,
-            x="time", y="assesment", hue="agent", ax=ax)
+        for i in range(nagents):
+            color = str(random.random() * .8)
+            self.axes.plot(time_x, agent_y_values[i], color)
 
-        canvas.draw()
+        self.plotting_canvas.draw()
 
-    ttk.Button(input_frame, text="SIMULATE!", command=simulate).grid(column=0, row=10)
+    def __init__(self):
+        # the GUIApplication needs an instance of the model in order to 
+        # run simulations on button click
+        self.model = HGModel()
 
-    for child in input_frame.winfo_children(): 
-        child.grid_configure(padx=20, pady=5)
+        # root window
+        self.root = Tk()
+        self.root.title("ABM")
+        self.root.protocol("WM_DELETE_WINDOW", self.quit)
+
+        # frames
+        main_frame = ttk.Frame(self.root, padding=10)
+        main_frame.grid()
+
+        input_frame = ttk.Frame(main_frame)
+        input_frame['borderwidth'] = 2
+        input_frame['relief'] = 'raised'
+        input_frame.grid(column=1, row=0, sticky=N, padx=4)
+
+        # labels
+        ttk.Label(input_frame, text="n agents").grid(column=0, row=0, sticky=W)
+        ttk.Label(input_frame, text="max time").grid(column=0, row=1, sticky=W)
+        ttk.Label(input_frame, text="alpha").grid(column=0, row=2, sticky=W)
+        ttk.Label(input_frame, text="epsilon").grid(column=0, row=3, sticky=W)
+        ttk.Label(input_frame, text="tau").grid(column=0, row=4, sticky=W)
+        ttk.Label(input_frame, text="noise").grid(column=0, row=5, sticky=W)
+
+        # input fields
+        self.nagents = StringVar()
+        self.nagents.set("40")
+        nagents_entry = ttk.Entry(input_frame, width=20, textvariable=self.nagents)
+        nagents_entry.grid(column=1, row=0, sticky=(W, E))
+
+        self.max_time = StringVar()
+        self.max_time.set("20")
+        max_time_entry = ttk.Entry(input_frame, width=20, textvariable=self.max_time)
+        max_time_entry.grid(column=1, row=1, sticky=(W, E))
+
+        self.alpha = StringVar()
+        self.alpha.set("0.75")
+        alpha_entry = ttk.Entry(input_frame, width=20, textvariable=self.alpha)
+        alpha_entry.grid(column=1, row=2, sticky=(W, E))
+
+        self.epsilon = StringVar()
+        self.epsilon.set("0.1")
+        epsilon_entry = ttk.Entry(input_frame, width=20, textvariable=self.epsilon)
+        epsilon_entry.grid(column=1, row=3, sticky=(W, E))
+
+        self.tau = StringVar()
+        self.tau.set("0.4")
+        tau_entry = ttk.Entry(input_frame, width=20, textvariable=self.tau)
+        tau_entry.grid(column=1, row=4, sticky=(W, E))
+
+        self.noise = StringVar()
+        self.noise.set("0.1")
+        noise_entry = ttk.Entry(input_frame, width=20, textvariable=self.noise)
+        noise_entry.grid(column=1, row=5, sticky=(W, E))
+
+        # matplotlib objects
+        self.figure = plt.figure(figsize=(5, 5))
+        self.plotting_canvas = FigureCanvasTkAgg(self.figure, master=main_frame)
+        self.plotting_canvas.draw() # TODO: where?
+        
+        self.axes = self.figure.add_axes([.1, .1, .9, .9])
+        self.clear_axes(self.axes)
+        
+        self.toolbar = NavigationToolbar2Tk(self.plotting_canvas, main_frame, pack_toolbar=False)
+        self.toolbar.update()
+        
+        self.toolbar.grid(row=1, column=0)
+        self.plotting_canvas.get_tk_widget().grid(row=0, column=0, padx=4)
+
+        # def simulate():
+        #     figure = Figure(figsize=(6, 6))
+        #     ax = figure.subplots()
+
+        #     canvas = FigureCanvasTkAgg(figure, master=main_frame)  # A tk.DrawingArea.
+        #     canvas.draw()
+
+        #     toolbar = NavigationToolbar2Tk(canvas, main_frame, pack_toolbar=False)
+        #     toolbar.update()
+        #     toolbar.grid(row=1, column=0)
+
+        #     canvas.get_tk_widget().grid(row=0, column=0, padx=4)
+
+        #     data = generate_data( # TODO: die werte werden hier einmal gespeichert. sollen eigentlich jedes mal neu ausgelesen werden
+        #         int(nagents.get()), # TODO: das programm hängt sich beim Beenden auf
+        #         int(max_time.get()), 
+        #         float(alpha.get()), 
+        #         float(epsilon.get()), 
+        #         float(tau.get()), 
+        #         float(noise.get())
+        #     )
+            
+        #     ax.clear()
+
+        #     plt.clf()
+        #     sns.set_theme()
+        #     sns.lineplot(
+        #         data=data,
+        #         x="time", y="assesment", hue="agent", ax=ax)
+
+        #     canvas.draw()
+
+        ttk.Button(input_frame, text="SIMULATE!", command=self.simulate).grid(column=0, row=10)
+
+        for child in input_frame.winfo_children(): 
+            child.grid_configure(padx=20, pady=5)
+
+    def quit(self):
+        print('quit')
+        self.root.quit()
+        self.root.destroy()
+        
+    def run(self):
+        self.root.mainloop()
+    
+
+
+
+
+
+
 
 # --- main code --- #
-root = Tk()
-set_up_ui(root)
-root.mainloop()
+
+my_abm_app = GUIApplication()
+my_abm_app.run()
