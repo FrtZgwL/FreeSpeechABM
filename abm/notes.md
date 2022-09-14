@@ -35,6 +35,13 @@ Auch beachten: Bei Hegselmann-Krause variiert alpha je nach Akteurgruppe. Sie di
 
 " Another view could be to look at as a parameter that can be influenced by intervention. Under such a view, one might start thinking about efficient truth proliferation policies: Which agents, holding what views, should have their attractions to truth modulated in order that all or at least a significant part of a society believes the truth? What if there is time pressure? What to do if the social exchange process has a network structure with primarily local interactions? (Hegselmann-Krause, 242)
 
+# Implementierung von Zensur
+
+1. staatliche zensur: für eine bestimmte range: akteure ignorieren die Meinungen der anderen, wenn sie in diese range fallen
+2. social silencing: akteure haben eine fringe-meinung, wenn sie einen bestimmten Abstand zur durchschnittlichen Meinung aller haben
+    1. alle, die keine fringe Meinung haben, ignorieren diejenigen mit fringe-Meinungen
+    2. wie oben + alle mit fringe Meinungen ignorieren diejenigen ohne fringe Meinungen
+
 # Beobachtungen
 
 Werte in diesem Bereich geben recht schöne Ergebnisse:
