@@ -161,55 +161,137 @@ class GUIApplication:
         self.root.title("ABM")
         self.root.protocol("WM_DELETE_WINDOW", self.quit)
 
-        # frames
+        # hg_orig_frame['borderwidth'] = 2
+        # hg_orig_frame['relief'] = 'raised'
+
         main_frame = ttk.Frame(self.root, padding=10)
         main_frame.grid()
 
+        # building the input area
         input_frame = ttk.Frame(main_frame)
-        input_frame['borderwidth'] = 2
-        input_frame['relief'] = 'raised'
-        input_frame.grid(column=1, row=0, sticky=N, padx=4)
+        input_frame.grid(column=1, row=0, sticky=N)
 
-        # labels
-        ttk.Label(input_frame, text="n agents").grid(column=0, row=0, sticky=W)
-        ttk.Label(input_frame, text="max time").grid(column=0, row=1, sticky=W)
-        ttk.Label(input_frame, text="alpha").grid(column=0, row=2, sticky=W)
-        ttk.Label(input_frame, text="epsilon").grid(column=0, row=3, sticky=W)
-        ttk.Label(input_frame, text="tau").grid(column=0, row=4, sticky=W)
-        ttk.Label(input_frame, text="noise").grid(column=0, row=5, sticky=W)
+            # Hegselmann-Krause area
+        hg_frame = ttk.Frame(input_frame)
+        hg_frame.grid(column=0, row=0, sticky=(N, E, W))
+        hg_frame["borderwidth"] = 2
+        hg_frame['relief'] = 'groove'
 
-        # input fields
+        ttk.Label(hg_frame, text="Hegselmann-Krause parameters").grid(column=0, row=0)
+
+        hg_smaller_frame = ttk.Frame(hg_frame)
+        hg_smaller_frame.grid(column=0, row=1, sticky=(N, E, W))
+
+        ttk.Label(hg_smaller_frame, text="n agents").grid(column=0, row=0, sticky=W)
         self.nagents = StringVar()
         self.nagents.set("40")
-        nagents_entry = ttk.Entry(input_frame, width=20, textvariable=self.nagents)
-        nagents_entry.grid(column=1, row=0, sticky=(W, E))
+        nagents_entry = ttk.Entry(hg_smaller_frame, width=20, textvariable=self.nagents)
+        nagents_entry.grid(column=1, row=0, sticky=(W, E), padx=5, pady=3)
 
+        ttk.Label(hg_smaller_frame, text="max time").grid(column=0, row=1, sticky=W)
         self.max_time = StringVar()
         self.max_time.set("20")
-        max_time_entry = ttk.Entry(input_frame, width=20, textvariable=self.max_time)
-        max_time_entry.grid(column=1, row=1, sticky=(W, E))
+        max_time_entry = ttk.Entry(hg_smaller_frame, width=20, textvariable=self.max_time)
+        max_time_entry.grid(column=1, row=1, sticky=(W, E), padx=5, pady=3)
 
+        ttk.Label(hg_smaller_frame, text="alpha").grid(column=0, row=2, sticky=W)
         self.alpha = StringVar()
         self.alpha.set("0.75")
-        alpha_entry = ttk.Entry(input_frame, width=20, textvariable=self.alpha)
-        alpha_entry.grid(column=1, row=2, sticky=(W, E))
+        alpha_entry = ttk.Entry(hg_smaller_frame, width=20, textvariable=self.alpha)
+        alpha_entry.grid(column=1, row=2, sticky=(W, E), padx=5, pady=3)
 
+        ttk.Label(hg_smaller_frame, text="epsilon").grid(column=0, row=3, sticky=W)
         self.epsilon = StringVar()
         self.epsilon.set("0.1")
-        epsilon_entry = ttk.Entry(input_frame, width=20, textvariable=self.epsilon)
-        epsilon_entry.grid(column=1, row=3, sticky=(W, E))
+        epsilon_entry = ttk.Entry(hg_smaller_frame, width=20, textvariable=self.epsilon)
+        epsilon_entry.grid(column=1, row=3, sticky=(W, E), padx=5, pady=3)
 
+        ttk.Label(hg_smaller_frame, text="tau").grid(column=0, row=4, sticky=W)
         self.tau = StringVar()
         self.tau.set("0.4")
-        tau_entry = ttk.Entry(input_frame, width=20, textvariable=self.tau)
-        tau_entry.grid(column=1, row=4, sticky=(W, E))
+        tau_entry = ttk.Entry(hg_smaller_frame, width=20, textvariable=self.tau)
+        tau_entry.grid(column=1, row=4, sticky=(W, E), padx=5, pady=3)
+
+        ttk.Separator(hg_smaller_frame, orient='horizontal').grid(
+            column=0, row=5, columnspan=2, sticky=(E, W), pady=5
+        )
+
+        ttk.Label(hg_smaller_frame, text="noise").grid(column=0, row=6, sticky=W)
 
         self.noise = StringVar()
         self.noise.set("0.1")
-        noise_entry = ttk.Entry(input_frame, width=20, textvariable=self.noise)
-        noise_entry.grid(column=1, row=5, sticky=(W, E))
+        noise_entry = ttk.Entry(hg_smaller_frame, width=20, textvariable=self.noise)
+        noise_entry.grid(column=1, row=6, sticky=(W, E), padx=5, pady=3)
 
-        # matplotlib objects
+            # free speech area
+        fs_frame = ttk.Frame(input_frame)
+        fs_frame["borderwidth"] = 2
+        fs_frame['relief'] = 'groove'
+        fs_frame.grid(column=0, row=1, sticky=(N, E, W), pady=10)
+
+        ttk.Label(fs_frame, text="Restrictions on Free Speech").grid(column=0, row=0)
+
+        fs_smaller_frame = ttk.Frame(fs_frame)
+        fs_smaller_frame.grid(column=0, row=1)
+
+        restr_type = StringVar()
+        restr_type_box = ttk.Combobox(fs_smaller_frame, textvariable=restr_type, width=20)
+        restr_type_box.grid(column=0, row=0, columnspan=2, sticky=(W, E), pady=7, padx=5)
+        restr_type_box["values"] = ("no restriction", "belief range", "arbitrary silencing", "unpopular_beliefs")
+        restr_type_box.state(["readonly"])
+
+        ttk.Label(fs_smaller_frame, text="range from").grid(column=0, row=1, sticky=W)
+        self.range_from = DoubleVar()
+        self.range_from.set(0.0)
+        range_from_entry = ttk.Entry(fs_smaller_frame, width=20, textvariable=self.range_from, state="readonly")
+        range_from_entry.grid(column=1, row=1, sticky=(W, E), padx=5, pady=3)
+
+        ttk.Label(fs_smaller_frame, text="range to").grid(column=0, row=2, sticky=W)
+        self.range_to = DoubleVar()
+        self.range_to.set(0.2)
+        range_to_entry = ttk.Entry(fs_smaller_frame, width=20, textvariable=self.range_to, state="readonly")
+        range_to_entry.grid(column=1, row=2, sticky=(W, E), padx=5, pady=3)
+
+        ttk.Label(fs_smaller_frame, text="silenced ratio").grid(column=0, row=3, sticky=W)
+        self.silenced_ratio = DoubleVar()
+        self.silenced_ratio.set(0.3)
+        silenced_ratio_entry = ttk.Entry(fs_smaller_frame, width=20, textvariable=self.silenced_ratio, state="readonly")
+        silenced_ratio_entry.grid(column=1, row=3, sticky=(W, E), padx=5, pady=3)
+
+        ttk.Label(fs_smaller_frame, text="silencing threshold").grid(column=0, row=4, sticky=W)
+        self.silencing_threshold = DoubleVar()
+        self.silencing_threshold.set(0.3)
+        silencing_threshold_entry = ttk.Entry(fs_smaller_frame, width=20, textvariable=self.silencing_threshold, state="readonly")
+        silencing_threshold_entry.grid(column=1, row=4, sticky=(W, E), padx=5, pady=3)
+        
+
+        # gray out other options when restriction type changes
+        def restr_type_change(event):
+            for entry in [range_from_entry, range_to_entry, silenced_ratio_entry, silencing_threshold_entry]:
+                entry["state"] = "readonly"
+
+            selection = restr_type_box.get()
+            match selection:
+                # in case of "no restriction" all entries stay disabled
+                case "arbitrary silencing":
+                    silenced_ratio_entry["state"] = "enabled"
+                    return
+                case "belief range":
+                    range_from_entry["state"] = "enabled"
+                    range_to_entry["state"] = "enabled"
+                    return
+                case "unpopular_beliefs":
+                    silencing_threshold_entry["state"] = "enabled"
+                    return
+            return
+        restr_type_box.bind('<<ComboboxSelected>>', restr_type_change)
+
+            # simbutton
+        ttk.Button(input_frame, text="SIMULATE!", command=self.simulate).grid(
+            column=0, row=10, sticky=(E, W))
+        
+
+        # building the plotting canvas
         self.figure = plt.figure(figsize=(5, 5))
         self.plotting_canvas = FigureCanvasTkAgg(self.figure, master=main_frame)
         self.plotting_canvas.draw()
@@ -223,9 +305,7 @@ class GUIApplication:
         self.toolbar.grid(row=1, column=0)
         self.plotting_canvas.get_tk_widget().grid(row=0, column=0, padx=4)
 
-        ttk.Button(input_frame, text="SIMULATE!", command=self.simulate).grid(column=0, row=10)
-
-        for child in input_frame.winfo_children(): 
+        for child in hg_frame.winfo_children(): 
             child.grid_configure(padx=20, pady=5)
 
     def quit(self):
