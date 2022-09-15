@@ -96,10 +96,6 @@ class HGModel:
         
         return dataframe
 
-# TODO maybe: progress bar; export as csv
-# TODO: allow irrational assesments?
-# TODO: plot truth
-
 class GUIApplication:
     # --- static functions --- #
     def clear_axes(self, axes):
@@ -216,7 +212,7 @@ class GUIApplication:
         # matplotlib objects
         self.figure = plt.figure(figsize=(5, 5))
         self.plotting_canvas = FigureCanvasTkAgg(self.figure, master=main_frame)
-        self.plotting_canvas.draw() # TODO: where?
+        self.plotting_canvas.draw()
         
         self.axes = self.figure.add_axes([.1, .1, .9, .9])
         self.clear_axes(self.axes)
