@@ -98,6 +98,7 @@ class HGModel:
 
 # TODO maybe: progress bar; export as csv
 # TODO: allow irrational assesments?
+# TODO: plot truth
 
 class GUIApplication:
     # --- static functions --- #
@@ -120,9 +121,12 @@ class GUIApplication:
         max_time = int(self.max_time.get())
         self.model.max_time = int(self.max_time.get())
 
+        tau = float(self.tau.get())
+        self.model.tau = float(self.tau.get())
+
         self.model.alpha = float(self.alpha.get())
         self.model.epsilon = float(self.epsilon.get())
-        self.model.tau = float(self.tau.get())
+        
         self.model.noise = float(self.noise.get())
 
         data = self.model.run_simulation()
@@ -137,9 +141,17 @@ class GUIApplication:
         
         self.clear_axes(self.axes)
 
-        for i in range(nagents):
+        
+
+        for i in range(nagents - 1):
             color = str(random.random() * .8)
             self.axes.plot(time_x, agent_y_values[i], color)
+        self.axes.plot(time_x, agent_y_values[nagents - 1], ".4", label="agents") # label one agent plot line
+        
+
+        tau_y_values = np.linspace(tau, tau, max_time+1)
+        self.axes.plot(time_x, tau_y_values, "#ed4e42", label="tau")
+        self.axes.legend(loc=0)
 
         self.plotting_canvas.draw()
 
@@ -214,38 +226,6 @@ class GUIApplication:
         
         self.toolbar.grid(row=1, column=0)
         self.plotting_canvas.get_tk_widget().grid(row=0, column=0, padx=4)
-
-        # def simulate():
-        #     figure = Figure(figsize=(6, 6))
-        #     ax = figure.subplots()
-
-        #     canvas = FigureCanvasTkAgg(figure, master=main_frame)  # A tk.DrawingArea.
-        #     canvas.draw()
-
-        #     toolbar = NavigationToolbar2Tk(canvas, main_frame, pack_toolbar=False)
-        #     toolbar.update()
-        #     toolbar.grid(row=1, column=0)
-
-        #     canvas.get_tk_widget().grid(row=0, column=0, padx=4)
-
-        #     data = generate_data( # TODO: die werte werden hier einmal gespeichert. sollen eigentlich jedes mal neu ausgelesen werden
-        #         int(nagents.get()), # TODO: das programm hängt sich beim Beenden auf
-        #         int(max_time.get()), 
-        #         float(alpha.get()), 
-        #         float(epsilon.get()), 
-        #         float(tau.get()), 
-        #         float(noise.get())
-        #     )
-            
-        #     ax.clear()
-
-        #     plt.clf()
-        #     sns.set_theme()
-        #     sns.lineplot(
-        #         data=data,
-        #         x="time", y="assesment", hue="agent", ax=ax)
-
-        #     canvas.draw()
 
         ttk.Button(input_frame, text="SIMULATE!", command=self.simulate).grid(column=0, row=10)
 
