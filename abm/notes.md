@@ -89,3 +89,7 @@ alpha sollte eher hoch sein, sonst nur chaos
 Will ich ein Modell programmieren, das man dann runterladen und mit dem man herumspielen kann? Oder will ich es nur implementieren, spannende Graphen ausspucken und darüber schreiben?
 
 Wahrscheinlich ersteres, schließlich ist der Deal, dass wir alleine für das Modell bewertet werden.
+
+# Fragen
+
+- warum hat es Auswirkungen auf Akteure, die im Bereich .5-1 glauben, wenn ich 0-.2 zensiere?

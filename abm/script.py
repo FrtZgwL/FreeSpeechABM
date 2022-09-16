@@ -1,4 +1,5 @@
 # --- imports --- #
+from ast import match_case
 from tkinter import *
 from tkinter import ttk
 
@@ -15,8 +16,15 @@ import random as rnd
 import statistics as stat
 import matplotlib.pyplot as plt
 import random
+from enum import Enum, auto
 
 # --- classes --- #
+
+class Mode(Enum):
+    NO_SILENCING = auto()
+    RANGE = auto()
+    RATIO = auto()
+    TRESHOLD = auto()
 
 class Agent:
     def __init__(self, id):
@@ -31,20 +39,62 @@ class Agent:
     def __repr__(self):
         return f"(Agent [{self.id}]: {self.assesment:.2f}, {self.peers})"
 
-    def update_peers(self, agent_list, epsilon):
-        for potential_peer in agent_list:
-            if (abs(potential_peer.assesment - self.assesment) < epsilon):
-                self.peers.add(potential_peer)
-
 class HGModel:
-    def __init__(self, nagents=40, max_time=20, alpha=.75, epsilon=.1, tau=.4, noise=.1):
-        self.nagents=40
-        self.max_time=20
-        self.alpha=.75
-        self.epsilon=.1
-        self.tau=.4
-        self.noise=.1
+    def __init__(
+            self, mode=Mode.NO_SILENCING, nagents=40, max_time=20, alpha=.75, epsilon=.1, tau=.4, noise=.1,
+            range_from=.0, range_to=.2, silenced_ratio=.2, silencing_treshold=.2, trust_in_mainstream=True
+        ):
 
+        self.nagents = nagents 
+        self.max_time = max_time 
+        self.alpha = alpha 
+        self.epsilon = epsilon 
+        self.tau = tau 
+        self.noise = noise 
+        
+        self.mode=mode
+
+        self.range_from = range_from
+        self.range_to = range_to
+        self.silenced_ratio = silenced_ratio
+        self.silencing_threshold = silencing_treshold
+        self.trust_in_mainstream = trust_in_mainstream
+
+    def update_peers(self, agent, agent_list):
+        match self.mode:
+            case Mode.NO_SILENCING:
+                for potential_peer in agent_list:
+                    if (abs(potential_peer.assesment - agent.assesment) < self.epsilon):
+                        agent.peers.add(potential_peer)
+            
+            case Mode.RANGE:
+                mainstream = set()
+                silenced = set()
+
+                # separating agents into mainstream and silenced based on given range
+                for potential_peer in agent_list:
+                    if (potential_peer.assesment >= self.range_from or potential_peer.assesment <= self.range_to):
+                        silenced.add(potential_peer)
+                    else:
+                        mainstream.add(potential_peer)
+                
+                # updating peers based on mainstream and silenced
+                if self.trust_in_mainstream or agent in mainstream:
+                    for potential_peer in mainstream.union({agent}): # agents will always treat themselves as peers
+                        if abs(potential_peer.assesment - agent.assesment) < self.epsilon:
+                            agent.peers.add(potential_peer)
+                else: # agents will only listen to silenced if they are silenced and not trusting in mainstream
+                    for potential_peer in silenced:
+                        if abs(potential_peer.assesment - agent.assesment) < self.epsilon:
+                            agent.peers.add(potential_peer)
+
+            case Mode.RATIO:
+                print("wip: simulationg RATIO")
+
+            case Mode.TRESHOLD:
+                print("wip: simulationg TRESHOLD")
+
+    # useful for debugging
     def print_agent_list(agent_list):
         print("[")
         for agent in agent_list:
@@ -55,18 +105,22 @@ class HGModel:
         print("]")
 
     def run_simulation(self):
+        print(f"running simulation in mode {self.mode}...") # TODO: why don't we arrive here?
+
         data = []
 
         # let there be n agents with random initial assesments
         agents = []
-        for i in range(self.nagents):
+        for i in range(self.nagents): # TODO: can't I just loop over the list?
             agent = Agent(i)
             agents.append(agent)
             data.append([agent.id, 0, agent.assesment])
 
-        # for each agent let there be a set of agents with similar assesments
-        for i in range(self.nagents):
-            agents[i].update_peers(agents, self.epsilon)
+        # for each agent let there be a set of peers.
+        # depending on restrictions on free speech agents will be limited in who 
+        # they accept as peers. 
+        for i in range(self.nagents): # TODO: can't I just loop over the list?
+            self.update_peers(agents[i], agents)
 
         # for each time step
         for u in range(1, self.max_time + 1): # we did step 0 by setting everything up 
@@ -76,9 +130,9 @@ class HGModel:
             for agent in agents:
 
                 # observing
-                observation = np.random.normal(self.tau, self.noise) # random value from bell curve around tau with noise as 2 std deviations
-                while observation <= 0 or observation > 1: # cutting off observations outside (0, 1]
-                    observation = np.random.normal(self.tau, self.noise/2)
+                observation = np.random.normal(self.tau, self.noise) # random value from bell curve around tau with noise as std deviation
+                # while observation <= 0 or observation > 1: # cutting off observations outside (0, 1]
+                #    observation = np.random.normal(self.tau, self.noise/2)
                 observation *= (1 - self.alpha)
 
                 # listening to peers
@@ -89,7 +143,7 @@ class HGModel:
 
             # update each agents peers and prepare previous assesment for next loop
             for agent in agents:
-                agent.update_peers(agents, self.epsilon)
+                self.update_peers(agent, agents)
                 agent.previous_assesment = agent.assesment
         
         dataframe = pd.DataFrame(data, columns=["agent", "time", "assesment"])
@@ -98,6 +152,7 @@ class HGModel:
 
 class GUIApplication:
     # --- static functions --- #
+
     def clear_axes(self, axes):
         axes.clear()
         axes.set_ylim(0, 1)
@@ -109,8 +164,9 @@ class GUIApplication:
 
     # --- class methods --- #
 
+# asks the HGModel to run a simulation an plots the received data
     def simulate(self): 
-        # update values and run simulation
+        # update Hegselmann Krause values
         nagents = int(self.nagents.get())
         self.model.nagents = int(self.nagents.get())
 
@@ -125,6 +181,29 @@ class GUIApplication:
         
         self.model.noise = float(self.noise.get())
 
+        # update free speech values
+        print(f"planning to run simulation with restriction type {self.restr_type.get()}")
+        match self.restr_type.get():
+            case "no restriction":
+                self.model.mode = Mode.NO_SILENCING
+
+            case "arbitrary silencing":
+                self.model.mode = Mode.RATIO
+
+            case "belief range":
+                self.model.mode = Mode.RANGE
+
+            case "unpopular_beliefs":
+                self.model.mode = Mode.TRESHOLD
+
+        print(self.range_from.get())
+
+        self.model.range_from = self.range_from.get()
+        self.model.range_to = self.range_to.get()
+        self.model.silenced_ratio = self.silenced_ratio.get()
+        self.model.silencing_threshold = self.silencing_threshold.get()
+        self.model.trust_in_mainstream = True # TODO: add to gui
+
         data = self.model.run_simulation()
 
         # build numpy arrays from the pandas DataFrame
@@ -137,13 +216,10 @@ class GUIApplication:
         
         self.clear_axes(self.axes)
 
-        
-
         for i in range(nagents - 1):
             color = str(random.random() * .8)
             self.axes.plot(time_x, agent_y_values[i], color)
         self.axes.plot(time_x, agent_y_values[nagents - 1], ".4", label="agents") # label one agent plot line
-        
 
         tau_y_values = np.linspace(tau, tau, max_time+1)
         self.axes.plot(time_x, tau_y_values, "#ed4e42", label="tau")
@@ -234,8 +310,8 @@ class GUIApplication:
         fs_smaller_frame = ttk.Frame(fs_frame)
         fs_smaller_frame.grid(column=0, row=1)
 
-        restr_type = StringVar()
-        restr_type_box = ttk.Combobox(fs_smaller_frame, textvariable=restr_type, width=20)
+        self.restr_type = StringVar() # TODO: rename to mode
+        restr_type_box = ttk.Combobox(fs_smaller_frame, textvariable=self.restr_type, width=20)
         restr_type_box.grid(column=0, row=0, columnspan=2, sticky=(W, E), pady=7, padx=5)
         restr_type_box["values"] = ("no restriction", "belief range", "arbitrary silencing", "unpopular_beliefs")
         restr_type_box.state(["readonly"])
@@ -270,19 +346,19 @@ class GUIApplication:
             for entry in [range_from_entry, range_to_entry, silenced_ratio_entry, silencing_threshold_entry]:
                 entry["state"] = "readonly"
 
-            selection = restr_type_box.get()
+            selection = self.restr_type.get()
             match selection:
                 # in case of "no restriction" all entries stay disabled
                 case "arbitrary silencing":
                     silenced_ratio_entry["state"] = "enabled"
-                    return
+
                 case "belief range":
                     range_from_entry["state"] = "enabled"
                     range_to_entry["state"] = "enabled"
-                    return
+
                 case "unpopular_beliefs":
                     silencing_threshold_entry["state"] = "enabled"
-                    return
+
             return
         restr_type_box.bind('<<ComboboxSelected>>', restr_type_change)
 
