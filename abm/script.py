@@ -202,7 +202,7 @@ class GUIApplication:
         self.model.range_to = self.range_to.get()
         self.model.silenced_ratio = self.silenced_ratio.get()
         self.model.silencing_threshold = self.silencing_threshold.get()
-        self.model.trust_in_mainstream = True # TODO: add to gui
+        self.model.trust_in_mainstream = self.trust_in_mainstream.get())
 
         data = self.model.run_simulation()
 
@@ -311,44 +311,54 @@ class GUIApplication:
         fs_smaller_frame.grid(column=0, row=1)
 
         self.restr_type = StringVar() # TODO: rename to mode
+        self.restr_type.set("--- type of restriction ---")
         restr_type_box = ttk.Combobox(fs_smaller_frame, textvariable=self.restr_type, width=20)
         restr_type_box.grid(column=0, row=0, columnspan=2, sticky=(W, E), pady=7, padx=5)
         restr_type_box["values"] = ("no restriction", "belief range", "arbitrary silencing", "unpopular_beliefs")
         restr_type_box.state(["readonly"])
 
-        ttk.Label(fs_smaller_frame, text="range from").grid(column=0, row=1, sticky=W)
+        self.trust_in_mainstream = BooleanVar()
+        self.trust_in_mainstream.set(True)
+        trust_in_mainstream_button = ttk.Checkbutton(fs_smaller_frame, variable=self.trust_in_mainstream,
+            onvalue=True, offvalue=False, text="silenced agents keep trust in mainstream")
+        trust_in_mainstream_button.state(["disabled"])
+        trust_in_mainstream_button.grid(column=0, row=1, columnspan=2, padx=5, pady=3, sticky=W)
+
+        ttk.Label(fs_smaller_frame, text="range from").grid(column=0, row=2, sticky=W, padx=5)
         self.range_from = DoubleVar()
         self.range_from.set(0.0)
-        range_from_entry = ttk.Entry(fs_smaller_frame, width=20, textvariable=self.range_from, state="readonly")
-        range_from_entry.grid(column=1, row=1, sticky=(W, E), padx=5, pady=3)
+        range_from_entry = ttk.Entry(fs_smaller_frame, width=20, textvariable=self.range_from, state="disabled")
+        range_from_entry.grid(column=1, row=2, sticky=(W, E), padx=5, pady=3)
 
-        ttk.Label(fs_smaller_frame, text="range to").grid(column=0, row=2, sticky=W)
+        ttk.Label(fs_smaller_frame, text="range to").grid(column=0, row=3, sticky=W, padx=5)
         self.range_to = DoubleVar()
         self.range_to.set(0.2)
-        range_to_entry = ttk.Entry(fs_smaller_frame, width=20, textvariable=self.range_to, state="readonly")
-        range_to_entry.grid(column=1, row=2, sticky=(W, E), padx=5, pady=3)
+        range_to_entry = ttk.Entry(fs_smaller_frame, width=20, textvariable=self.range_to, state="disabled")
+        range_to_entry.grid(column=1, row=3, sticky=(W, E), padx=5, pady=3)
 
-        ttk.Label(fs_smaller_frame, text="silenced ratio").grid(column=0, row=3, sticky=W)
+        ttk.Label(fs_smaller_frame, text="silenced ratio").grid(column=0, row=4, sticky=W, padx=5)
         self.silenced_ratio = DoubleVar()
         self.silenced_ratio.set(0.3)
-        silenced_ratio_entry = ttk.Entry(fs_smaller_frame, width=20, textvariable=self.silenced_ratio, state="readonly")
-        silenced_ratio_entry.grid(column=1, row=3, sticky=(W, E), padx=5, pady=3)
+        silenced_ratio_entry = ttk.Entry(fs_smaller_frame, width=20, textvariable=self.silenced_ratio, state="disabled")
+        silenced_ratio_entry.grid(column=1, row=4, sticky=(W, E), padx=5, pady=3)
 
-        ttk.Label(fs_smaller_frame, text="silencing threshold").grid(column=0, row=4, sticky=W)
+        ttk.Label(fs_smaller_frame, text="silencing threshold").grid(column=0, row=5, sticky=W, padx=5)
         self.silencing_threshold = DoubleVar()
         self.silencing_threshold.set(0.3)
-        silencing_threshold_entry = ttk.Entry(fs_smaller_frame, width=20, textvariable=self.silencing_threshold, state="readonly")
-        silencing_threshold_entry.grid(column=1, row=4, sticky=(W, E), padx=5, pady=3)
-        
+        silencing_threshold_entry = ttk.Entry(fs_smaller_frame, width=20, textvariable=self.silencing_threshold, state="disabled")
+        silencing_threshold_entry.grid(column=1, row=5, sticky=(W, E), padx=5, pady=3)
 
         # gray out other options when restriction type changes
         def restr_type_change(event):
             for entry in [range_from_entry, range_to_entry, silenced_ratio_entry, silencing_threshold_entry]:
-                entry["state"] = "readonly"
+                entry["state"] = "disabled"
+            trust_in_mainstream_button["state"] = "enabled"
 
             selection = self.restr_type.get()
             match selection:
-                # in case of "no restriction" all entries stay disabled
+                case "no restriction":
+                    trust_in_mainstream_button["state"] = "disabled"
+                
                 case "arbitrary silencing":
                     silenced_ratio_entry["state"] = "enabled"
 
