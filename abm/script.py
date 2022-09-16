@@ -28,7 +28,7 @@ class Mode(Enum):
 
 class Agent:
     def __init__(self, id):
-        self.assesment = 1 - rnd.random() # values in (0, 1]
+        self.assesment = 1 - random.random() # values in (0, 1]
         self.previous_assesment = self.assesment # later needed to make the assesments of all agents change simultaneously
         self.peers = set()
         self.id = id
@@ -42,7 +42,7 @@ class Agent:
 class HGModel:
     def __init__(
             self, mode=Mode.NO_SILENCING, nagents=40, max_time=20, alpha=.75, epsilon=.1, tau=.4, noise=.1,
-            range_from=.0, range_to=.2, silenced_ratio=.2, silencing_treshold=.2, trust_in_mainstream=True
+            range_from=.0, range_to=.2, silenced_ratio=.2, silencing_treshold=.2, trust_in_mainstream=True, keep_seed=False
         ):
 
         self.nagents = nagents 
@@ -53,12 +53,22 @@ class HGModel:
         self.noise = noise 
         
         self.mode=mode
+        self.keep_seed=keep_seed
 
         self.range_from = range_from
         self.range_to = range_to
         self.silenced_ratio = silenced_ratio
         self.silencing_threshold = silencing_treshold
         self.trust_in_mainstream = trust_in_mainstream
+
+        self.silenced_group = set()
+        self.mainstream_group = set()
+
+        self.current_seed = (
+            "Fliehe, mein Freund, in deine Einsamkeit und dorthin, wo eine rauhe, starke Luft weht."
+            + " Nicht ist es dein Loos, Fliegenwedel zu sein. —"
+        )
+        random.seed(self.current_seed)
 
     def update_peers(self, agent, agent_list):
         match self.mode:
@@ -89,10 +99,45 @@ class HGModel:
                             agent.peers.add(potential_peer)
 
             case Mode.RATIO:
-                print("wip: simulationg RATIO")
+                if self.trust_in_mainstream or agent in self.mainstream_group: # TODO: das zusammenfassen; vtll benannte gruppen und ich wähle dann silenced und mainstream?
+                    for potential_peer in self.mainstream_group.union({agent}): # agents will always treat themselves as peers
+                        if abs(potential_peer.assesment - agent.assesment) < self.epsilon:
+                            agent.peers.add(potential_peer)
+                else: # agents will only listen to silenced if they are silenced and not trusting in mainstream
+                    for potential_peer in self.silenced_group:
+                        if abs(potential_peer.assesment - agent.assesment) < self.epsilon:
+                            agent.peers.add(potential_peer)
 
             case Mode.TRESHOLD:
-                print("wip: simulationg TRESHOLD")
+                popularity_ranking = agent_list.copy()
+
+                # the higher the mean distance of one agents assesment to those of the others, 
+                # the less popular the agents assesment
+                def unpopularity(agent):
+                    distances = [
+                        abs(agent.assesment - other_agent.assesment) for other_agent in agent_list
+                    ]
+                    return(stat.mean(distances))
+                
+                popularity_ranking.sort(key=unpopularity)
+                popularity_ranking.reverse() # the list should start with the least popular agents
+
+                last_unpopular_agent = round(self.silencing_threshold * self.nagents)
+                unpopular_agents = set(popularity_ranking[:last_unpopular_agent])
+                popular_agents = set(popularity_ranking[last_unpopular_agent:]) # TODO: I should do it like this in the other place
+
+                if self.trust_in_mainstream or agent in popular_agents: # TODO: das zusammenfassen; vtll benannte gruppen und ich wähle dann silenced und mainstream?
+                    for potential_peer in popular_agents.union({agent}): # agents will always treat themselves as peers
+                        if abs(potential_peer.assesment - agent.assesment) < self.epsilon:
+                            agent.peers.add(potential_peer)
+                else: # agents will only listen to silenced if they are silenced and not trusting in mainstream
+                    for potential_peer in self.unpopular_agents:
+                        if abs(potential_peer.assesment - agent.assesment) < self.epsilon:
+                            agent.peers.add(potential_peer)
+
+
+
+
 
     # useful for debugging
     def print_agent_list(agent_list):
@@ -105,34 +150,41 @@ class HGModel:
         print("]")
 
     def run_simulation(self):
-        print(f"running simulation in mode {self.mode}...") # TODO: why don't we arrive here?
+        if not self.keep_seed:
+            self.current_seed = random.Random().random()
+        random.seed(self.current_seed)
 
         data = []
 
         # let there be n agents with random initial assesments
-        agents = []
+        agent_list = []
         for i in range(self.nagents): # TODO: can't I just loop over the list?
             agent = Agent(i)
-            agents.append(agent)
+            agent_list.append(agent)
             data.append([agent.id, 0, agent.assesment])
+
+        if self.mode.RATIO:
+            silenced_amount = round(self.nagents * self.silenced_ratio)
+            self.silenced_group = set(agent_list[:silenced_amount])
+            self.mainstream_group = set(agent_list) - self.silenced_group
 
         # for each agent let there be a set of peers.
         # depending on restrictions on free speech agents will be limited in who 
         # they accept as peers. 
         for i in range(self.nagents): # TODO: can't I just loop over the list?
-            self.update_peers(agents[i], agents)
+            self.update_peers(agent_list[i], agent_list)
 
         # for each time step
         for u in range(1, self.max_time + 1): # we did step 0 by setting everything up 
                 # and we want to include the step of max_time
 
             # update the assesment of each agent to a ratio between the agents assesments and the mean of their peers
-            for agent in agents:
+            for agent in agent_list:
 
                 # observing
-                observation = np.random.normal(self.tau, self.noise) # random value from bell curve around tau with noise as std deviation
+                observation = random.gauss(self.tau, self.noise) # random value from bell curve around tau with noise as std deviation
                 # while observation <= 0 or observation > 1: # cutting off observations outside (0, 1]
-                #    observation = np.random.normal(self.tau, self.noise/2)
+                #    observation = random.gauss(self.tau, self.noise/2)
                 observation *= (1 - self.alpha)
 
                 # listening to peers
@@ -142,13 +194,15 @@ class HGModel:
                 data.append([agent.id, u, agent.assesment])
 
             # update each agents peers and prepare previous assesment for next loop
-            for agent in agents:
-                self.update_peers(agent, agents)
+            for agent in agent_list:
+                self.update_peers(agent, agent_list)
                 agent.previous_assesment = agent.assesment
         
         dataframe = pd.DataFrame(data, columns=["agent", "time", "assesment"])
         
         return dataframe
+
+# TODO: how to: ratio? getter and setter? wanna put them into groups but where?
 
 class GUIApplication:
     # --- static functions --- #
@@ -181,6 +235,8 @@ class GUIApplication:
         
         self.model.noise = float(self.noise.get())
 
+        self.model.keep_seed = self.keep_seed.get()
+
         # update free speech values
         print(f"planning to run simulation with restriction type {self.restr_type.get()}")
         match self.restr_type.get():
@@ -202,7 +258,7 @@ class GUIApplication:
         self.model.range_to = self.range_to.get()
         self.model.silenced_ratio = self.silenced_ratio.get()
         self.model.silencing_threshold = self.silencing_threshold.get()
-        self.model.trust_in_mainstream = self.trust_in_mainstream.get())
+        self.model.trust_in_mainstream = self.trust_in_mainstream.get()
 
         data = self.model.run_simulation()
 
@@ -371,11 +427,17 @@ class GUIApplication:
 
             return
         restr_type_box.bind('<<ComboboxSelected>>', restr_type_change)
+        
+        self.keep_seed = BooleanVar()
+        self.keep_seed.set(False)
+        keep_seed_button = ttk.Checkbutton(input_frame, variable=self.keep_seed,
+            onvalue=True, offvalue=False, text="keep random seed")
+        keep_seed_button.grid(column=0, row=9, padx=5, sticky=W)
 
             # simbutton
         ttk.Button(input_frame, text="SIMULATE!", command=self.simulate).grid(
-            column=0, row=10, sticky=(E, W))
-        
+            column=0, row=10, sticky=(E, W), pady=10)
+
 
         # building the plotting canvas
         self.figure = plt.figure(figsize=(5, 5))
@@ -401,15 +463,11 @@ class GUIApplication:
         
     def run(self):
         self.root.mainloop()
-    
-
-
-
-
 
 
 
 # --- main code --- #
 
-my_abm_app = GUIApplication()
-my_abm_app.run()
+if __name__ == "__main__":
+    my_abm_app = GUIApplication()
+    my_abm_app.run()
