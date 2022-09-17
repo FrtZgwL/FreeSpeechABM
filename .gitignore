@@ -1,0 +1,7 @@
+*/__pycache__
+info/*
+!info/info.tex
+!info/info.pdf
+!info/essay-formal.cls
+!info/compile_info.sh
+!info/why_am_i_doing_this.md
