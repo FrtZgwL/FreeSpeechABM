@@ -2,6 +2,7 @@
 from ast import match_case
 from tkinter import *
 from tkinter import ttk
+from tokenize import Double
 
 from matplotlib.backends.backend_tkagg import (
     FigureCanvasTkAgg, NavigationToolbar2Tk)
@@ -200,7 +201,7 @@ class GUIApplication:
     def clear_axes(self, axes):
         axes.clear()
         axes.set_ylim(0, 1)
-        axes.set_xlim(0, int(self.max_time.get()))
+        axes.set_xlim(0, self.max_time.get())
         axes.grid(True, color="1")
         axes.set_facecolor("0.95")
         axes.set_ylabel("assesment")
@@ -209,20 +210,12 @@ class GUIApplication:
 # asks the HGModel to run a simulation an plots the received data
     def simulate(self): 
         # update Hegselmann Krause values
-        nagents = int(self.nagents.get())
-        self.model.nagents = int(self.nagents.get())
-
-        max_time = int(self.max_time.get())
-        self.model.max_time = int(self.max_time.get())
-
-        tau = float(self.tau.get())
-        self.model.tau = float(self.tau.get())
-
-        self.model.alpha = float(self.alpha.get())
-        self.model.epsilon = float(self.epsilon.get())
-        
-        self.model.noise = float(self.noise.get())
-
+        self.model.nagents = self.nagents.get()
+        self.model.max_time = self.max_time.get()
+        self.model.tau = self.tau.get()
+        self.model.alpha = self.alpha.get()
+        self.model.epsilon = self.epsilon.get()
+        self.model.noise = self.noise.get()
         self.model.keep_seed = self.keep_seed.get()
 
         # update free speech values
@@ -249,21 +242,21 @@ class GUIApplication:
         data = self.model.run_simulation()
 
         # build numpy arrays from the pandas DataFrame
-        time_x = np.linspace(0, max_time, max_time+1)
+        time_x = np.linspace(0, self.model.max_time, self.model.max_time+1)
         agent_y_values = []
 
-        for i in range(nagents):
+        for i in range(self.model.nagents):
             next_values = data[data["agent"] == i]["assesment"].values
             agent_y_values.append(next_values)
         
         self.clear_axes(self.axes)
 
-        for i in range(nagents - 1):
+        for i in range(self.model.nagents - 1):
             color = str(random.random() * .8)
             self.axes.plot(time_x, agent_y_values[i], color)
-        self.axes.plot(time_x, agent_y_values[nagents - 1], ".4", label="agents") # label one agent plot line
+        self.axes.plot(time_x, agent_y_values[self.model.nagents - 1], ".4", label="agents") # label one agent plot line
 
-        tau_y_values = np.linspace(tau, tau, max_time+1)
+        tau_y_values = np.linspace(self.model.tau, self.model.tau, self.model.max_time+1)
         self.axes.plot(time_x, tau_y_values, "#ed4e42", label="tau")
         self.axes.legend(loc=0)
 
@@ -301,31 +294,31 @@ class GUIApplication:
         hg_smaller_frame.grid(column=0, row=1, sticky=(N, E, W))
 
         ttk.Label(hg_smaller_frame, text="n agents").grid(column=0, row=0, sticky=W)
-        self.nagents = StringVar()
+        self.nagents = IntVar()
         self.nagents.set("40")
         nagents_entry = ttk.Entry(hg_smaller_frame, width=20, textvariable=self.nagents)
         nagents_entry.grid(column=1, row=0, sticky=(W, E), padx=5, pady=3)
 
         ttk.Label(hg_smaller_frame, text="max time").grid(column=0, row=1, sticky=W)
-        self.max_time = StringVar()
+        self.max_time = IntVar()
         self.max_time.set("20")
         max_time_entry = ttk.Entry(hg_smaller_frame, width=20, textvariable=self.max_time)
         max_time_entry.grid(column=1, row=1, sticky=(W, E), padx=5, pady=3)
 
         ttk.Label(hg_smaller_frame, text="alpha").grid(column=0, row=2, sticky=W)
-        self.alpha = StringVar()
+        self.alpha = DoubleVar()
         self.alpha.set("0.75")
         alpha_entry = ttk.Entry(hg_smaller_frame, width=20, textvariable=self.alpha)
         alpha_entry.grid(column=1, row=2, sticky=(W, E), padx=5, pady=3)
 
         ttk.Label(hg_smaller_frame, text="epsilon").grid(column=0, row=3, sticky=W)
-        self.epsilon = StringVar()
+        self.epsilon = DoubleVar()
         self.epsilon.set("0.1")
         epsilon_entry = ttk.Entry(hg_smaller_frame, width=20, textvariable=self.epsilon)
         epsilon_entry.grid(column=1, row=3, sticky=(W, E), padx=5, pady=3)
 
         ttk.Label(hg_smaller_frame, text="tau").grid(column=0, row=4, sticky=W)
-        self.tau = StringVar()
+        self.tau = DoubleVar()
         self.tau.set("0.4")
         tau_entry = ttk.Entry(hg_smaller_frame, width=20, textvariable=self.tau)
         tau_entry.grid(column=1, row=4, sticky=(W, E), padx=5, pady=3)
@@ -336,7 +329,7 @@ class GUIApplication:
 
         ttk.Label(hg_smaller_frame, text="noise").grid(column=0, row=6, sticky=W)
 
-        self.noise = StringVar()
+        self.noise = DoubleVar()
         self.noise.set("0.1")
         noise_entry = ttk.Entry(hg_smaller_frame, width=20, textvariable=self.noise)
         noise_entry.grid(column=1, row=6, sticky=(W, E), padx=5, pady=3)
