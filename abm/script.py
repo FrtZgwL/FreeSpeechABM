@@ -272,9 +272,6 @@ class GUIApplication:
         self.root.title("ABM")
         self.root.protocol("WM_DELETE_WINDOW", self.quit)
 
-        # hg_orig_frame['borderwidth'] = 2
-        # hg_orig_frame['relief'] = 'raised'
-
         main_frame = ttk.Frame(self.root, padding=10)
         main_frame.grid()
 
