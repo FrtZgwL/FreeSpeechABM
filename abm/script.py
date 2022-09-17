@@ -165,8 +165,8 @@ class HGModel:
         # for each agent let there be a set of peers.
         # depending on restrictions on free speech agents will be limited in who 
         # they accept as peers. 
-        for i in range(self.nagents): # TODO: can't I just loop over the list?
-            self.update_peers(agent_list[i], agent_list)
+        for agent in agent_list:
+            self.update_peers(agent, agent_list)
 
         # for each time step
         for u in range(1, self.max_time + 1): # we did step 0 by setting everything up 
@@ -352,7 +352,7 @@ class GUIApplication:
         fs_smaller_frame = ttk.Frame(fs_frame)
         fs_smaller_frame.grid(column=0, row=1)
 
-        self.restr_type = StringVar() # TODO: rename to mode
+        self.restr_type = StringVar()
         self.restr_type.set("--- type of restriction ---")
         restr_type_box = ttk.Combobox(fs_smaller_frame, textvariable=self.restr_type, width=20)
         restr_type_box.grid(column=0, row=0, columnspan=2, sticky=(W, E), pady=7, padx=5)
