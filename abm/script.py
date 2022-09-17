@@ -37,7 +37,7 @@ class Agent:
         return f"assesment: {self.assesment} and peers: {self.peers}"
 
     def __repr__(self):
-        return f"(Agent [{self.id}]: {self.assesment:.2f}, {self.peers})"
+        return f"(Agent [{self.id}]: {self.assesment:.2f})"
 
 class HGModel:
     def __init__(
@@ -71,73 +71,67 @@ class HGModel:
         random.seed(self.current_seed)
 
     def update_peers(self, agent, agent_list):
-        match self.mode:
-            case Mode.NO_SILENCING:
-                for potential_peer in agent_list:
-                    if (abs(potential_peer.assesment - agent.assesment) < self.epsilon):
+        agent.peers = set()
+        mainstream = set()
+        silenced = set()
+
+
+        if self.mode == Mode.NO_SILENCING:
+            for potential_peer in agent_list:
+                if (abs(potential_peer.assesment - agent.assesment) < self.epsilon):
+                    agent.peers.add(potential_peer)
+
+        else:
+            match self.mode:
+                case Mode.RANGE:
+                    in_range = set()
+                    out_of_range = set()
+
+                    # separating agents based on given range TODO: this does not need to be redone for every single agent
+                    for potential_peer in agent_list:
+                        if (potential_peer.assesment >= self.range_to or potential_peer.assesment <= self.range_from):
+                            out_of_range.add(potential_peer)
+                        else:
+                            in_range.add(potential_peer)
+                    
+                    # updating peers based separation
+                    mainstream = out_of_range
+                    silenced = in_range
+
+                case Mode.RATIO:
+                    # these groups don't need to change with every updating of peers
+                    # since they represent innate characteristics 
+                    mainstream = self.mainstream_group 
+                    silenced = self.silenced_group
+
+                case Mode.TRESHOLD:
+                    popularity_ranking = agent_list.copy()
+
+                    # the higher the mean distance of one agents assesment to those of the others, 
+                    # the less popular the agents assesment
+                    def unpopularity(agent):
+                        distances = [
+                            abs(agent.assesment - other_agent.assesment) for other_agent in agent_list
+                        ]
+                        return(stat.mean(distances))
+                    
+                    popularity_ranking.sort(key=unpopularity)
+                    popularity_ranking.reverse() # the list should start with the least popular agents
+
+                    last_unpopular_agent = round(self.silencing_threshold * self.nagents)
+                    mainstream = set(popularity_ranking[last_unpopular_agent:])
+                    silenced = set(popularity_ranking[:last_unpopular_agent])
+
+            if self.trust_in_mainstream or agent in mainstream:
+                for potential_peer in mainstream.union({agent}): # agents will always treat themselves as peers
+                    if abs(potential_peer.assesment - agent.assesment) < self.epsilon:
                         agent.peers.add(potential_peer)
-            
-            case Mode.RANGE:
-                mainstream = set()
-                silenced = set()
-
-                # separating agents into mainstream and silenced based on given range
-                for potential_peer in agent_list:
-                    if (potential_peer.assesment >= self.range_from or potential_peer.assesment <= self.range_to):
-                        silenced.add(potential_peer)
-                    else:
-                        mainstream.add(potential_peer)
-                
-                # updating peers based on mainstream and silenced
-                if self.trust_in_mainstream or agent in mainstream:
-                    for potential_peer in mainstream.union({agent}): # agents will always treat themselves as peers
-                        if abs(potential_peer.assesment - agent.assesment) < self.epsilon:
-                            agent.peers.add(potential_peer)
-                else: # agents will only listen to silenced if they are silenced and not trusting in mainstream
-                    for potential_peer in silenced:
-                        if abs(potential_peer.assesment - agent.assesment) < self.epsilon:
-                            agent.peers.add(potential_peer)
-
-            case Mode.RATIO:
-                if self.trust_in_mainstream or agent in self.mainstream_group: # TODO: das zusammenfassen; vtll benannte gruppen und ich wähle dann silenced und mainstream?
-                    for potential_peer in self.mainstream_group.union({agent}): # agents will always treat themselves as peers
-                        if abs(potential_peer.assesment - agent.assesment) < self.epsilon:
-                            agent.peers.add(potential_peer)
-                else: # agents will only listen to silenced if they are silenced and not trusting in mainstream
-                    for potential_peer in self.silenced_group:
-                        if abs(potential_peer.assesment - agent.assesment) < self.epsilon:
-                            agent.peers.add(potential_peer)
-
-            case Mode.TRESHOLD:
-                popularity_ranking = agent_list.copy()
-
-                # the higher the mean distance of one agents assesment to those of the others, 
-                # the less popular the agents assesment
-                def unpopularity(agent):
-                    distances = [
-                        abs(agent.assesment - other_agent.assesment) for other_agent in agent_list
-                    ]
-                    return(stat.mean(distances))
-                
-                popularity_ranking.sort(key=unpopularity)
-                popularity_ranking.reverse() # the list should start with the least popular agents
-
-                last_unpopular_agent = round(self.silencing_threshold * self.nagents)
-                unpopular_agents = set(popularity_ranking[:last_unpopular_agent])
-                popular_agents = set(popularity_ranking[last_unpopular_agent:]) # TODO: I should do it like this in the other place
-
-                if self.trust_in_mainstream or agent in popular_agents: # TODO: das zusammenfassen; vtll benannte gruppen und ich wähle dann silenced und mainstream?
-                    for potential_peer in popular_agents.union({agent}): # agents will always treat themselves as peers
-                        if abs(potential_peer.assesment - agent.assesment) < self.epsilon:
-                            agent.peers.add(potential_peer)
-                else: # agents will only listen to silenced if they are silenced and not trusting in mainstream
-                    for potential_peer in self.unpopular_agents:
-                        if abs(potential_peer.assesment - agent.assesment) < self.epsilon:
-                            agent.peers.add(potential_peer)
-
-
-
-
+            else: # agents will only listen to silenced if they are silenced and not trusting in mainstream
+                for potential_peer in silenced:
+                    if abs(potential_peer.assesment - agent.assesment) < self.epsilon:
+                        agent.peers.add(potential_peer)
+        
+        # ^print(f"mainstream: {mainstream}\nsilenced{silenced}")
 
     # useful for debugging
     def print_agent_list(agent_list):
@@ -158,7 +152,7 @@ class HGModel:
 
         # let there be n agents with random initial assesments
         agent_list = []
-        for i in range(self.nagents): # TODO: can't I just loop over the list?
+        for i in range(self.nagents):
             agent = Agent(i)
             agent_list.append(agent)
             data.append([agent.id, 0, agent.assesment])
@@ -202,11 +196,7 @@ class HGModel:
         
         return dataframe
 
-# TODO: how to: ratio? getter and setter? wanna put them into groups but where?
-
 class GUIApplication:
-    # --- static functions --- #
-
     def clear_axes(self, axes):
         axes.clear()
         axes.set_ylim(0, 1)
@@ -215,8 +205,6 @@ class GUIApplication:
         axes.set_facecolor("0.95")
         axes.set_ylabel("assesment")
         axes.set_xlabel("time")
-
-    # --- class methods --- #
 
 # asks the HGModel to run a simulation an plots the received data
     def simulate(self): 
@@ -238,7 +226,6 @@ class GUIApplication:
         self.model.keep_seed = self.keep_seed.get()
 
         # update free speech values
-        print(f"planning to run simulation with restriction type {self.restr_type.get()}")
         match self.restr_type.get():
             case "no restriction":
                 self.model.mode = Mode.NO_SILENCING
@@ -251,8 +238,7 @@ class GUIApplication:
 
             case "unpopular_beliefs":
                 self.model.mode = Mode.TRESHOLD
-
-        print(self.range_from.get())
+        print(f"planning to run simulation with restriction type {self.restr_type.get()}, {self.model.mode}")
 
         self.model.range_from = self.range_from.get()
         self.model.range_to = self.range_to.get()
@@ -440,11 +426,11 @@ class GUIApplication:
 
 
         # building the plotting canvas
-        self.figure = plt.figure(figsize=(5, 5))
+        self.figure = plt.figure(figsize=(6, 6))
         self.plotting_canvas = FigureCanvasTkAgg(self.figure, master=main_frame)
         self.plotting_canvas.draw()
         
-        self.axes = self.figure.add_axes([.1, .1, .9, .9])
+        self.axes = self.figure.add_axes([.1, .1, .85, .85])
         self.clear_axes(self.axes)
         
         self.toolbar = NavigationToolbar2Tk(self.plotting_canvas, main_frame, pack_toolbar=False)
