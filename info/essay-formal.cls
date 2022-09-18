@@ -1,7 +1,7 @@
 
 % --- Setup Class --- %
 \NeedsTeXFormat{LaTeX2e}
-\ProvidesClass{essay-informal}
+\ProvidesClass{essay-formal}
 \LoadClass[12pt,DIV=10]{scrartcl} % DIV ist für die Seitenränder
 
 % --- KOMA Script Optionen --- %

@@ -153,7 +153,7 @@ class HGModel:
 
         # let there be n agents with random initial assesments
         agent_list = []
-        for i in range(self.nagents):
+        for i in range(self.nagents): # the first agent is 0 because it's simpler to count from 0 with computers
             agent = Agent(i)
             agent_list.append(agent)
             data.append([agent.id, 0, agent.assesment])
