@@ -47,68 +47,8 @@
 \addtokomafont{disposition}{\rmfamily}
 
 % Kurzer Essay
-% \AtBeginDocument{\markright{\MyTitle \hfill \today \vspace{-5em}}}
-\AtBeginDocument{
-	\begin{titlepage}
-		\thispagestyle{empty}
 
-		{\noindent\Large \today \hfill LMU Munich\\}
-		Semester of Summer '22 \hfill Faculty for Philosophy,\\
-		Words: 2360 of 6000 \hfill Theory of Science\\
-		\raggedleft and Study of Religion
-		
-		
-		\vfill
-		\begin{center}
-			\noindent \textbf{{\Huge Simulating free speech\\}}
-			\vspace{.5em}
-			{\Large An agent based modeling approach}
-		\end{center}
-		
-		\vfill
-
-		\begin{center}
-			{\noindent\Large PD Dr. habil. Jürgen Landes\\}
-			Module: P3 Analysis, reflection and critique of\\ 
-			basic problems in theoretical philosophy\\
-			Seminar: Social Epistemology
-
-			\vspace{3em}
-
-			{\noindent \Large Cedric Tonye-Djon\\}
-			Master: Theoretical Philosophy\\
-			Student Number: 12387354\\
-			\href{mailto:cedric.tonyedjon@gmail.com}{cedric.tonyedjon@gmail.com}
-			%cedric.tonyedjon@gmail.com
-		\end{center}
-		
-	\end{titlepage}
-
-	\tableofcontents
-	\clearpage
-}
 %\setcounter{secnumdepth}{0} % nur, wenn ich keine Überschriftenzählung will
 
 
-% \AtBeginDocument{
-% 	\begin{titlepage}
-% 		\thispagestyle{empty}
 
-% 		{\noindent\Large \today \hfill LMU München\\}
-% 		Sommersemester \hfill Lehrstuhl für Theoretische Philosophie
-% 		\vfill
-% 		%\begin{center}
-% 			\textsf{{\Huge To what extent is ``objectivity'' reducible?\\}}
-% 			% \vspace{.5em}
-% 			% {\Large Subtitle}}
-% 		%\end{center}
-		
-% 		\vfill
-% 		{\noindent\Large Dr. phil. habil. Alexander Reutlinger \hfill Cedric Tonye-Djon\\}
-% 		{P5: Spezialprobleme der analytischen Philosophie \hfill Matrikelnummer 12387354\\}
-% 		Scientific Objectivity \hfill cedrictd.ctd@gmail.com
-% 	\end{titlepage}
-
-% 	\tableofcontents
-% 	\clearpage
-% }
