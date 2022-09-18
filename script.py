@@ -316,7 +316,7 @@ class GUIApplication:
 
         ttk.Label(hg_smaller_frame, text="tau").grid(column=0, row=4, sticky=W)
         self.tau = DoubleVar()
-        self.tau.set("0.4")
+        self.tau.set("0.42")
         tau_entry = ttk.Entry(hg_smaller_frame, width=20, textvariable=self.tau)
         tau_entry.grid(column=1, row=4, sticky=(W, E), padx=5, pady=3)
 
