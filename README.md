@@ -1,7 +1,34 @@
 ---
 bibliography:
 - /home/cedric/Dropbox/Scripts-und-Co/zotero-bibliographie/sources.bib
+nocite:
+- "[@schieb2016]"
+- "[@onuchowska2019]"
 ---
+
+::: titlepage
+LMU Munich\
+Semester of Summer '22 Faculty for Philosophy,\
+Words: 2316 Theory of Science\
+and Study of Religion
+
+::: center
+**Simulating free speech\
+** An agent based modeling approach
+:::
+
+::: center
+PD Dr. habil. Jürgen Landes\
+Module: P3 Analysis, reflection and critique of\
+basic problems in theoretical philosophy\
+Seminar: Social Epistemology
+
+Cedric Tonye-Djon\
+Master: Theoretical Philosophy\
+Student Number: 12387354\
+<cedric.tonyedjon@gmail.com>
+:::
+:::
 
 **Abstract:** In this short piece I am exploring the epistemic value of
 limitations on free speech using agent based modeling. I start by
@@ -54,7 +81,7 @@ predict the end of the world or fantasize about global conspiracies. The
 only situation where speech should be limited is when the angry mob is
 literally standing outside some politicians house, torches and
 pitchforks in hand and this utterance would cause them to storm in and
-lynch them.[Page? @mill]
+lynch them.
 
 1859 was a long time ago. Since then our world has witnessed the
 emergence of social media and with it new challenges for political
@@ -65,16 +92,12 @@ speech is cemented into many state constitutions and a part of the
 example, while the USA allows it, Germany outlaws Holocaust Denial
 because the expressed ideas are so deeply wrong that they are dangerous.
 In addition to that, private social media platforms regulate a large
-portion of all political deliberation worldwide. They also break with
-Mill. For example, the social media platform Twitter banned Donald
-Trump, the former president of the USA while he was still in office.
-JAN6\... Twitter also disabled *Articles of Unity*\...BOTS[@RESEARCH] In
-public discourse, some people ask for the social media platforms to
-finally censor dangerous ideas while others moan their perceived
-suppression under "cancel culture". So what are we to make of Mills
-ideas today? How free should free speech be? Is Mill correct in claiming
-that any censorship is an epistemic failiure? Or can some forms of it be
-justified and if so, which ones?
+portion of all political deliberation worldwide. In public discourse,
+some beg them to finally censor dangerous ideas while others moan their
+perceived suppression under a prevalent "cancel culture". So what are we
+to make of Mills ideas today? How free should free speech be? Is Mill
+correct in claiming that any censorship is an epistemic failiure? Or can
+some forms of it be justified and if so, which ones?
 
 # The basics of agent based modeling
 
@@ -88,12 +111,12 @@ their actions determined by a small set of rules. This idialization is
 the the source of a big strength and the biggest weakness of ABM. One
 the one hand, it allows researchers to concentrate on a select few
 variables. This brings the studied phenomenon clearly into focus while
-pushing the messy complexities of actual people into a blurry
-background. On the other hand, it makes the results of the model
-dependent on the idealizing assumtions being made. Therefore simulations
-using these models can generate quasi-empirical data. But this data is
-even more succeptible to scepticism and reinterpretation than empirical
-data from studies and experiments.
+pushing the messy complexities of actual people into a blurry background
+[@shugars2021 highlights this strength]. On the other hand, it makes the
+results of the model dependent on the idealizing assumtions being made.
+Therefore simulations using these models can generate quasi-empirical
+data. But this data is even more succeptible to scepticism and
+reinterpretation than empirical data from studies and experiments.
 
 There are two more major strengths when using agent based modeling to
 explore social epistemology. One strength is that is easier to perform
@@ -108,7 +131,8 @@ experimental debate they themselves have to know the truth and what is
 true is exactly what is up for debate. In an ABM this can be solved
 easily. Truth, rationality, understanding, justification or whatever can
 be build into a model and different strategies at attaining it can be
-compared. It's as simple as: The truth is that $\tau = 42\%$.
+compared. It's as simple as: The truth is that $\tau = 42\%$
+[@shugars2021].
 
 One approach to ABM of social epistemology was developed by
 [@hegselmann2009]. Their idea was to represent an agent as an integer
@@ -168,26 +192,31 @@ that of any other.
 
 With Python, TkInter and matplotlib I created a graphical desktop
 application that can be used to easily play around with these
-parameters. Through experimentation I noticed some tendencies. All of
-these are in scenarios where the silenced group keeps trust in the
-mainstream.
+parameters. Through experimentation I noticed some tendencies. I will
+now present them, based on examples. (To save on space the settings for
+each of the simulations are in the appendix.) All of these are in
+scenarios where the silenced group keeps trust in the mainstream because
+these were the only scenarios in which I found noteworthy effects. When
+agents loose trust in the mainstream they just talk to the other agents
+that also lost trust in the mainstream. And these are the agents they
+would want to talk to anyways. They go about more or less as they would,
+were they were not censored. In each of the examples I am also comparing
+the censored simulation with an uncensored simulation where all random
+values are kept the same so that it is easy to see the censorships
+effect. I always plot time on the x-axis. The gray lines represent each
+agents assesments and the red line represents the value of tau.
 
 If a range of beliefs is censored that is far outside the truth, for
 example with $(\phi = 0, \psi = 0.2, \tau = 0.4)$ then deliberation
-barely changes. This can be observed quite clearly by comparing a
-simulation with censorship to one without where all the random values
-stay the same:
+barely changes. If, however, a range around the truth is censored, it
+can lead agents to form polarized groups around the truth, and although
+these groups will converge most of the time, they won't always do so. It
+can also push all agents out of the range into one direction, away from
+the truth.
 
-If, however, a range around the truth is censored, it can lead agents to
-form polarized groups around the truth, and these groups won't always
-converge.
-
-It can also push all agents out of the range into one direction, away
-from the truth.
-
-This model doen't show an epistemic disadvantage of silencing wrong
+The model doen't show an epistemic disadvantage of silencing wrong
 beliefs, but agents also don't justify their beliefs here. They just
-evaluate some state of affairs and then access their evaluations
+evaluate some state of affairs and then access the evaluations of others
 directly. Since the benefits that Mill lists for allowing the expression
 of false beliefs relate to their justification, it is therefore not
 surprising that the model does not show any of them.
@@ -205,9 +234,9 @@ observation. In reality, an epistemic disadvantage in silencing people
 based on the colour of their skin, their gender and so on might be that
 they have important things to say that the dominant group overlooks
 [This idea is developed in the literature on standpoint epistemology.
-See @{harding1992;...}]. If this is the case, a more accurate model of
-arbitrary silencing should assign different noise functions to agents
-belonging to the different groups.
+See for example @harding2015]. If this is the case, a more accurate
+model of arbitrary silencing should assign different noise functions to
+agents belonging to the different groups.
 
 I didn't find any cases where silencing beliefs because they were
 unpopular had a significant impact. This also seems implausible in
@@ -221,9 +250,8 @@ within.
 
 Another significant limitation of this model is that I am evaluating
 freedom of speech from a purely epistemic standpoint. In reality, other
-things matter too. Objectifying and dehumanizing pornography, for
+things matter aswell. Objectifying and dehumanizing pornography, for
 example, could be censored in order to avoid indirect harm to women.
-(\... do this, but it is doubtful how effective their attempt is.)
 Maybe, an agent based model that aims to contribute to the debate around
 free speech should take some kind of utility or ethical normativity into
 account.
@@ -240,7 +268,7 @@ focus on the variables that matter. The Hegselmann-Krause inspired model
 that I explored here suggests that a deliberating group can become
 polarized and inaccurate when the truth is censored. Here, Mill is
 correct. But it also suggests that censoring falsehoods is neither
-harmful (contra Mill) nor helpful to our epistemic ends. Furthermore,
+harmful (contra Mill) nor conducive to our epistemic ends. Furthermore,
 according to the model, arbitrarily silencing a group of agents barely
 detracts from our epistemic ends as long as this group is not huge. Even
 if the group is huge the effect is small. According to this model,
@@ -248,10 +276,27 @@ silencing unpopular beliefs does not make a group less accurate.
 
 The results of these explorations should be taken with a grain of salt.
 They are based on simplifying assumtions that might be a bit too
-simplifying. Especially the assumtion that all agents are equally
-capable observers in every respect, the pure focus on epistemic value to
-the exclusion of individual utility or ethical value and the abstraction
-from justifications appear to be doubtworthy.
+simplifying. The assumtion that all agents are equally capable observers
+in every respect, the focus on epistemic value to the exclusion of all
+other normativity and the abstraction from justifications seem to be
+doubtworthy. I also only experimented manually. The mechanisms I
+identified need to be checked for robustness by plotting different
+measures of agent accuracy against different variables for each of the
+censorship types.
+
+# Appendix
+
+               1.1    1.2    1.3    2.1    2.2    2.3
+  ------------ ------ ------ ------ ------ ------ ------
+  $n$          40     30     40     100    100    100
+  $\alpha$     0.95   0.8    0.95   0.9    0.9    0.9
+  $\epsilon$   0.1    0.2    0.1    0.1    0.1    0.1
+  $\tau$       0.4    0.42   0.4    0.45   0.45   0.45
+  *noise*      0.2    0.1    0.2    0.1    0.1    0.1
+  $\phi$       0      0.3    0.3                  
+  $\psi$       0.2    0.5    0.5                  
+
+  : Values for simulations
 
 # Why am I doing this?
 
