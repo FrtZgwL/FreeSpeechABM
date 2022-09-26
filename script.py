@@ -75,7 +75,6 @@ class HGModel:
         mainstream = set()
         silenced = set()
 
-
         if self.mode == Mode.NO_SILENCING:
             for potential_peer in agent_list:
                 if (abs(potential_peer.assesment - agent.assesment) < self.epsilon):
@@ -87,7 +86,7 @@ class HGModel:
                     in_range = set()
                     out_of_range = set()
 
-                    # separating agents based on given range TODO: this does not need to be redone for every single agent
+                    # separating agents based on given range
                     for potential_peer in agent_list:
                         if (potential_peer.assesment >= self.range_to or potential_peer.assesment <= self.range_from):
                             out_of_range.add(potential_peer)
@@ -130,8 +129,6 @@ class HGModel:
                 for potential_peer in silenced:
                     if abs(potential_peer.assesment - agent.assesment) < self.epsilon:
                         agent.peers.add(potential_peer)
-        
-        # ^logging.info(f"mainstream: {mainstream}\nsilenced{silenced}")
 
     # useful for debugging
     def print_agent_list(agent_list):
@@ -206,7 +203,7 @@ class GUIApplication:
         axes.set_ylabel("assesment")
         axes.set_xlabel("time")
 
-# asks the HGModel to run a simulation an plots the received data
+    # asks the HGModel to run a simulation an plots the received data
     def simulate(self): 
         # update Hegselmann Krause values
         self.model.nagents = self.nagents.get()
@@ -413,7 +410,6 @@ class GUIApplication:
         ttk.Button(input_frame, text="SIMULATE!", command=self.simulate).grid(
             column=0, row=10, sticky=(E, W), pady=10)
 
-
         # building the plotting canvas
         self.figure = plt.figure(figsize=(6, 6))
         self.plotting_canvas = FigureCanvasTkAgg(self.figure, master=main_frame)
@@ -438,7 +434,6 @@ class GUIApplication:
         
     def run(self):
         self.root.mainloop()
-
 
 
 # --- main code --- #
