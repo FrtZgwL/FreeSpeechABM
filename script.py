@@ -1,5 +1,4 @@
 # --- imports --- #
-from ast import match_case
 from tkinter import *
 from tkinter import ttk
 from tokenize import Double
@@ -12,12 +11,12 @@ from matplotlib.figure import Figure
 
 import numpy as np
 import pandas as pd
-import seaborn as sns
 import random as rnd
 import statistics as stat
 import matplotlib.pyplot as plt
 import random
 from enum import Enum, auto
+import logging
 
 # --- classes --- #
 
@@ -132,17 +131,17 @@ class HGModel:
                     if abs(potential_peer.assesment - agent.assesment) < self.epsilon:
                         agent.peers.add(potential_peer)
         
-        # ^print(f"mainstream: {mainstream}\nsilenced{silenced}")
+        # ^logging.info(f"mainstream: {mainstream}\nsilenced{silenced}")
 
     # useful for debugging
     def print_agent_list(agent_list):
-        print("[")
+        logging.info("[")
         for agent in agent_list:
             representation = f"    (Agent [{agent.id}]: {agent.assesment:.2f}, " + "{"
             representation += ", ".join(f"[{peer.id}]" for peer in agent.peers) + "})"
         
-            print(representation)
-        print("]")
+            logging.info(representation)
+        logging.info("]")
 
     def run_simulation(self):
         if not self.keep_seed:
@@ -231,7 +230,7 @@ class GUIApplication:
 
             case "unpopular_beliefs":
                 self.model.mode = Mode.TRESHOLD
-        print(f"planning to run simulation with restriction type {self.restr_type.get()}, {self.model.mode}")
+        logging.info(f"planning to run simulation with restriction type {self.restr_type.get()}, {self.model.mode}")
 
         self.model.range_from = self.range_from.get()
         self.model.range_to = self.range_to.get()
@@ -433,7 +432,7 @@ class GUIApplication:
             child.grid_configure(padx=20, pady=5)
 
     def quit(self):
-        print('quit')
+        logging.info('quit')
         self.root.quit()
         self.root.destroy()
         
